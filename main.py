@@ -12,6 +12,7 @@ from model import HairDetectorModel
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, required=True)
+    parser.add_argument('--epoch_num', type=int, required=False, default=30)
     args = parser.parse_args()
 
     detector = dlib.get_frontal_face_detector()
@@ -23,7 +24,7 @@ def main():
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     model = HairDetectorModel().to(device)
 
-    trainer = pl.Trainer(gpus=1)
+    trainer = pl.Trainer(gpus=1, max_epochs=args.epoch_num)
     trainer.fit(model, DataLoader(train_datast, batch_size=32, shuffle=True), DataLoader(val_dataset))
 
     torch.save(model.state_dict(), 'result_model.pth')

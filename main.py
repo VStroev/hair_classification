@@ -23,13 +23,10 @@ def main():
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     model = HairDetectorModel().to(device)
 
-    trainer = pl.Trainer()
+    trainer = pl.Trainer(gpus=1)
     trainer.fit(model, DataLoader(train_datast, batch_size=32, shuffle=True), DataLoader(val_dataset))
 
-    quantized_model = torch.quantization.quantize_dynamic(
-        model, {torch.nn.Conv2d, torch.nn.Linear}, dtype=torch.qint8
-    )
-    torch.save(quantized_model.state_dict(), 'result_model.pth')
+    torch.save(model.state_dict(), 'result_model.pth')
 
 if __name__ == '__main__':
     main()

@@ -6,13 +6,16 @@ from torchvision.transforms import transforms
 
 
 class CropFace:
-    def __init__(self, detector, expand_rate=.4):
+    def __init__(self, detector, expand_rate=.4, strict=False):
         self.detector = detector
         self.expand_rate = expand_rate
+        self.strict = strict
 
     def __call__(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         rect = self.detector(gray, 1)
+        if len(rect) < 1 and self.strict:
+            return None
         if len(rect) < 1:
             return image
         rect = rect[0]
@@ -60,10 +63,10 @@ class ValDataset(Dataset):
     def __init__(self, path, detector):
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])
+        self.crop_fn = CropFace(detector, strict=True)
         self.transform = transforms.Compose([
-                CropFace(detector),
                 transforms.ToPILImage(),
-                transforms.Resize(224),
+                transforms.Resize((224, 224)),
                 transforms.ToTensor(),
                 normalize
             ])
@@ -75,4 +78,9 @@ class ValDataset(Dataset):
     def __getitem__(self, item):
         path = self.entries[item]
         img = cv2.cvtColor(cv2.imread(str(path)), cv2.COLOR_BGR2RGB)
-        return self.transform(img)
+        face_crop = self.crop_fn(img)
+        if face_crop is not None:
+            face_crop = self.transform(face_crop)
+
+        return face_crop, str(path)
+

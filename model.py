@@ -9,7 +9,6 @@ class HairDetectorModel(pl.LightningModule):
     def __init__(self):
         super(HairDetectorModel, self).__init__()
         self.backbone = models.shufflenet_v2_x0_5(pretrained=True)
-        print(self.backbone)
         self.backbone.fc = torch.nn.Linear(1024, 1)
         self.f1 = metrics.classification.F1(2)
 

@@ -40,7 +40,6 @@ def main():
         for i in range(len(val_dataset)):
             img, path = val_dataset[i]
             res = apply_model(quantized_model, img, args.threshold)
-            print(path, res)
             writer.writerow([path, res])
 
 if __name__ == '__main__':
